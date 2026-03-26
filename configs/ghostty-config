@@ -1,0 +1,61 @@
+# Ghostty Configuration
+# Location: ~/.config/ghostty/config
+
+# === THEME: Catppuccin Frappé ===
+background = 303446
+foreground = c6d0f5
+cursor-color = f2d5cf
+selection-background = 626880
+selection-foreground = c6d0f5
+
+# Palette (Catppuccin Frappé)
+palette = 0=#51576d
+palette = 1=#e78284
+palette = 2=#a6d189
+palette = 3=#e5c890
+palette = 4=#8caaee
+palette = 5=#f4b8e4
+palette = 6=#81c8be
+palette = 7=#b5bfe2
+palette = 8=#626880
+palette = 9=#e78284
+palette = 10=#a6d189
+palette = 11=#e5c890
+palette = 12=#8caaee
+palette = 13=#f4b8e4
+palette = 14=#81c8be
+palette = 15=#a5adce
+
+# === FONT ===
+# Recommendation: Use a Nerd Font for icons support
+# Download from: https://www.nerdfonts.com/
+# Good options: JetBrainsMono Nerd Font, FiraCode Nerd Font, Hack Nerd Font
+font-family = JetBrainsMono Nerd Font
+font-size = 14
+font-thicken = true
+
+# === WINDOW ===
+window-padding-x = 12
+window-padding-y = 10
+window-decoration = true
+macos-titlebar-style = tabs
+confirm-close-surface = false
+
+# === CURSOR ===
+cursor-style = block
+cursor-style-blink = true
+
+# === BEHAVIOR ===
+copy-on-select = clipboard
+mouse-hide-while-typing = true
+scrollback-limit = 10000
+
+# === KEYBINDINGS (optional extras) ===
+# Split panes (like tmux)
+keybind = cmd+d=new_split:right
+keybind = cmd+shift+d=new_split:down
+keybind = cmd+shift+enter=toggle_split_zoom
+keybind = cmd+opt+left=goto_split:left
+keybind = cmd+opt+right=goto_split:right
+keybind = cmd+opt+up=goto_split:top
+keybind = cmd+opt+down=goto_split:bottom

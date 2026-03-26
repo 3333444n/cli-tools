@@ -1,0 +1,55 @@
+# Starship Prompt Config - Catppuccin Frappé inspired
+
+format = """
+$directory\
+$git_branch\
+$git_status\
+$nodejs\
+$python\
+$rust\
+$cmd_duration\
+$line_break\
+$character"""
+
+[directory]
+style = "bold #8caaee"
+truncation_length = 3
+truncate_to_repo = true
+
+[git_branch]
+symbol = " "
+style = "bold #a6d189"
+
+[git_status]
+style = "bold #e5c890"
+conflicted = "⚔️ "
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "📦"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[nodejs]
+symbol = " "
+style = "bold #a6d189"
+
+[python]
+symbol = " "
+style = "bold #e5c890"
+
+[rust]
+symbol = " "
+style = "bold #e78284"
+
+[cmd_duration]
+min_time = 2_000
+format = "took [$duration]($style) "
+style = "bold #f4b8e4"
+
+[character]
+success_symbol = "[❯](bold #a6d189)"
+error_symbol = "[❯](bold #e78284)"

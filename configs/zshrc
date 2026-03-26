@@ -1,0 +1,231 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                    Team Zsh Config                          ║
+# ║              Autocompletion • Icons • Git • Colors          ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# === HISTORY ===
+HISTFILE=~/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+setopt SHARE_HISTORY
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+
+# ==============================================================================
+# 1. PLUGINS & INITIALIZATION
+# ==============================================================================
+
+# Completion system
+autoload -Uz compinit
+compinit
+autoload -U colors && colors
+
+# Case-insensitive completion
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# Load Homebrew dependencies
+BREW_PREFIX=$(brew --prefix)
+
+[ -f "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh" ] && \
+    source "$BREW_PREFIX/share/zsh-autosuggestions/zsh-autosuggestions.zsh"
+
+[ -f "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] && \
+    source "$BREW_PREFIX/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+[ -f "$HOME/.fzf.zsh" ] && source "$HOME/.fzf.zsh"
+
+ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+# Starship prompt
+if command -v starship >/dev/null; then
+    eval "$(starship init zsh)"
+fi
+
+# ==============================================================================
+# 2. EXPORTS & PATHS
+# ==============================================================================
+
+# NVM (Node Version Manager)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# User Binaries
+export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/bin:$PATH"
+
+# ==============================================================================
+# 3. ALIASES
+# ==============================================================================
+
+# Eza (modern ls with icons)
+alias ls='eza --icons'
+alias ll='eza -l --icons --git'
+alias la='eza -la --icons --git'
+alias lt='eza --tree --icons --level=2'
+alias lta='eza --tree --icons --level=2 -a'
+
+# Bat (modern cat)
+alias cat='bat'
+
+# System
+alias ..='cd ..'
+alias ...='cd ../..'
+alias grep='grep --color=auto'
+alias mkdir='mkdir -pv'
+alias c='clear'
+alias new='open ~ && open ~/Downloads'
+alias reload='source ~/.zshrc'
+
+# Media
+alias yt='yt-dlp -f "bestvideo[height<=1080]+bestaudio/best[height<=1080]" -ciw -o "~/Downloads/%(channel_handle,channel)s.%(ext)s"'
+
+# AI / Custom Scripts
+alias rembg="~/rembg-tool.sh"
+
+# ==============================================================================
+# 4. FUNCTIONS
+# ==============================================================================
+
+# --- AUDIO TOOLS ---
+
+# Download Audio Only from YouTube
+# Usage: yt-audio <url> [format]
+# Example: yt-audio "url" (defaults to mp3)
+# Example: yt-audio "url" wav
+yt-audio() {
+  if [ -z "$1" ]; then
+    echo "Usage: yt-audio <url> [format]"
+    echo "Default format is mp3. Options: mp3, wav, m4a, flac"
+    return 1
+  fi
+
+  local url="$1"
+  local format="${2:-mp3}"
+
+  echo "🎵 Downloading best audio and converting to $format..."
+  yt-dlp -x --audio-format "$format" --audio-quality 0 -o "~/Downloads/%(title)s.%(ext)s" "$url"
+  echo "✅ Done!"
+}
+
+# --- IMAGE TOOLS ---
+
+# Image optimizer: Converts all images to WebP and DELETES originals
+mgck() {
+  setopt local_options null_glob
+  echo "🖼️  Converting images to WebP..."
+  magick mogrify -quality 75 -format webp *.JPG *.jpg *.heic *.jpeg *.PNG *.png *.gif
+
+  echo "🗑️  Deleting originals..."
+  rm *.jpg *.JPG *.jpeg *.png *.gif *.heic *.PNG 2>/dev/null
+
+  echo "✅ WebP conversion complete."
+}
+
+# --- VIDEO TOOLS ---
+
+# Simple MP4 Converter
+mp4() {
+  if [ $# -eq 0 ]; then
+    echo "Usage: mp4 <input_file>"
+    return 1
+  fi
+
+  local input="$1"
+  local output="${input%.*}.mp4"
+
+  if [ ! -f "$input" ]; then
+    echo "Error: File '$input' not found"
+    return 1
+  fi
+
+  echo "🎥 Converting '$input' to '$output'..."
+  ffmpeg -i "$input" -c:v libx264 -c:a aac "$output" && echo "✅ Done: $output"
+}
+
+# --- PDF TOOLS ---
+
+# Compress PDF using ImageMagick
+pdf-comp() {
+  if [ -z "$1" ]; then
+    echo "Usage: pdf-comp /path/to/file.pdf [dpi]"
+    echo "Default: 300 DPI. Use 150 for smaller file size."
+    return 1
+  fi
+
+  local input_file="$1"
+  local density="${2:-300}"
+  local output_file="${input_file%.*} (comp).${input_file##*.}"
+
+  echo "📉 Compressing PDF at ${density} DPI..."
+  magick -density "$density" "$input_file" -quality 75 -compress jpeg "$output_file"
+  echo "✅ Saved as: $output_file"
+}
+
+# Split PDF into images
+pdf-split() {
+  if [ -z "$1" ]; then
+    echo "Usage: pdf-split file.pdf [format]"
+    return 1
+  fi
+
+  local input_file="$1"
+  local format="${2:-jpg}"
+  local base_name="${input_file%.*}"
+
+  echo "📂 Creating folder: $base_name-pages"
+  mkdir -p "$base_name-pages"
+
+  echo "✂️  Splitting PDF..."
+  magick -density 300 "$input_file" -quality 85 "$base_name-pages/$base_name-%03d.$format"
+  echo "✅ Done."
+}
+
+# Merge all PDFs in current directory
+pdf-merge() {
+  local output_file="${1:-merged-output.pdf}"
+
+  if ! ls *.pdf >/dev/null 2>&1; then
+    echo "❌ No PDF files found in this directory."
+    return 1
+  fi
+
+  echo "🔗 Merging all PDFs in folder..."
+  qpdf --empty --pages *.pdf -- "$output_file"
+  echo "✅ Saved as: $output_file"
+}
+
+# Join PDFs from a specific folder
+qpdf-join() {
+    folder="$1"
+    if [ ! -d "$folder" ]; then
+        echo "Error: '$folder' is not a directory"
+        return 1
+    fi
+
+    pdfs=("$folder"/*.pdf)
+    if [ ${#pdfs[@]} -eq 0 ]; then
+        echo "No PDF files found in '$folder'"
+        return 1
+    fi
+
+    sorted_pdfs=($(printf "%s\n" "${pdfs[@]}" | sort))
+    echo "Merging ${#sorted_pdfs[@]} PDFs from $folder..."
+    qpdf --empty --pages "${sorted_pdfs[@]}" -- "$folder/merged.pdf"
+    echo "✅ Done: $folder/merged.pdf"
+}
+
+# ==============================================================================
+# 5. KEY BINDINGS
+# ==============================================================================
+
+# History search with up/down arrows
+bindkey '^[[A' history-search-backward
+bindkey '^[[B' history-search-forward
+
+# Option + left/right to move by word
+bindkey '^[b' backward-word
+bindkey '^[f' forward-word
