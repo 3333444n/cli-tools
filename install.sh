@@ -47,6 +47,7 @@ BREW_PACKAGES=(
     zsh-syntax-highlighting
     fzf             # Fuzzy finder
     glow            # Markdown renderer for the terminal
+    syncthing       # Continuous file synchronization
 )
 
 for pkg in "${BREW_PACKAGES[@]}"; do
@@ -59,7 +60,20 @@ for pkg in "${BREW_PACKAGES[@]}"; do
 done
 
 # ------------------------------------------------------------------
-# 3. NERD FONT
+# 3. SYNCTHING SERVICE
+# ------------------------------------------------------------------
+echo ""
+echo "🔄 Setting up Syncthing..."
+if brew services list | grep -q "syncthing.*started"; then
+    echo "  ✅ Syncthing service already running"
+else
+    echo "  🚀 Starting Syncthing as a background service..."
+    brew services start syncthing
+    echo "  ✅ Syncthing started — web UI at http://127.0.0.1:8384"
+fi
+
+# ------------------------------------------------------------------
+# 4. NERD FONT
 # ------------------------------------------------------------------
 echo ""
 echo "🔤 Installing JetBrainsMono Nerd Font..."
@@ -70,7 +84,7 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 4. GHOSTTY TERMINAL
+# 5. GHOSTTY TERMINAL
 # ------------------------------------------------------------------
 echo ""
 echo "👻 Installing Ghostty terminal..."
@@ -81,7 +95,7 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 5. DOCKER CHECK
+# 6. DOCKER CHECK
 # ------------------------------------------------------------------
 echo ""
 if command -v docker &>/dev/null; then
@@ -93,7 +107,7 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 6. NVM (Node Version Manager)
+# 7. NVM (Node Version Manager)
 # ------------------------------------------------------------------
 echo ""
 if [ -d "$HOME/.nvm" ]; then
@@ -104,7 +118,7 @@ else
 fi
 
 # ------------------------------------------------------------------
-# 7. REMBG SCRIPT
+# 8. REMBG SCRIPT
 # ------------------------------------------------------------------
 echo ""
 echo "📄 Installing rembg-tool.sh..."
@@ -113,7 +127,7 @@ chmod +x "$HOME/rembg-tool.sh"
 echo "  ✅ Installed to ~/rembg-tool.sh"
 
 # ------------------------------------------------------------------
-# 8. GHOSTTY CONFIG
+# 9. GHOSTTY CONFIG
 # ------------------------------------------------------------------
 echo ""
 echo "👻 Installing Ghostty config..."
@@ -126,7 +140,7 @@ cp "$SCRIPT_DIR/configs/ghostty-config" "$HOME/.config/ghostty/config"
 echo "  ✅ Installed to ~/.config/ghostty/config"
 
 # ------------------------------------------------------------------
-# 9. STARSHIP CONFIG
+# 10. STARSHIP CONFIG
 # ------------------------------------------------------------------
 echo ""
 echo "🚀 Installing Starship config..."
@@ -139,7 +153,7 @@ cp "$SCRIPT_DIR/configs/starship.toml" "$HOME/.config/starship.toml"
 echo "  ✅ Installed to ~/.config/starship.toml"
 
 # ------------------------------------------------------------------
-# 10. ZSHRC
+# 11. ZSHRC
 # ------------------------------------------------------------------
 echo ""
 echo "⚙️  Installing .zshrc..."
@@ -151,7 +165,7 @@ cp "$SCRIPT_DIR/configs/zshrc" "$HOME/.zshrc"
 echo "  ✅ Installed to ~/.zshrc"
 
 # ------------------------------------------------------------------
-# 11. PRE-PULL DOCKER IMAGE FOR REMBG
+# 12. PRE-PULL DOCKER IMAGE FOR REMBG
 # ------------------------------------------------------------------
 echo ""
 if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
@@ -173,7 +187,7 @@ echo "Available commands:"
 echo ""
 echo "  Media:"
 echo "    yt <url>           Download YouTube video (1080p)"
-echo "    yt-audio <url>     Download audio only (mp3/wav/flac)"
+echo "    yt-a <url>         Download audio only (mp3/wav/flac)"
 echo "    mp4 <file>         Convert video to MP4"
 echo ""
 echo "  Images:"
@@ -185,6 +199,9 @@ echo "    pdf-comp <file>    Compress a PDF"
 echo "    pdf-split <file>   Split PDF into images"
 echo "    pdf-merge          Merge all PDFs in current folder"
 echo "    qpdf-join <dir>    Merge all PDFs in a folder"
+echo ""
+echo "  Sync:"
+echo "    syncthing          Web UI at http://127.0.0.1:8384"
 echo ""
 echo "  Terminal:"
 echo "    ls / ll / la / lt  Modern file listing with icons"

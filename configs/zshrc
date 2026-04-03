@@ -93,12 +93,12 @@ alias rembg="~/rembg-tool.sh"
 # --- AUDIO TOOLS ---
 
 # Download Audio Only from YouTube
-# Usage: yt-audio <url> [format]
-# Example: yt-audio "url" (defaults to mp3)
-# Example: yt-audio "url" wav
-yt-audio() {
+# Usage: yt-a <url> [format]
+# Example: yt-a "url" (defaults to mp3)
+# Example: yt-a "url" wav
+yt-a() {
   if [ -z "$1" ]; then
-    echo "Usage: yt-audio <url> [format]"
+    echo "Usage: yt-a <url> [format]"
     echo "Default format is mp3. Options: mp3, wav, m4a, flac"
     return 1
   fi
