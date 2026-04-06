@@ -78,8 +78,7 @@ Open **PowerShell** and run:
 ```powershell
 git clone <this-repo-url>
 cd cli-tools
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
-.\install.ps1
+PowerShell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
 The script will:

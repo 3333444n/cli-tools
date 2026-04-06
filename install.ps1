@@ -1,36 +1,48 @@
-# ╔══════════════════════════════════════════════════════════════╗
-# ║           Team CLI Tools Installer (Windows)                ║
-# ║        Installs terminal tools, aliases & configs           ║
-# ╚══════════════════════════════════════════════════════════════╝
+# ----------------------------------------------------------------
+#   Team CLI Tools Installer (Windows)
+#   Installs terminal tools, aliases & configs
+# ----------------------------------------------------------------
 
 #Requires -Version 5.1
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════════╗"
-Write-Host "║           Team CLI Tools Installer (Windows)                ║"
-Write-Host "╚══════════════════════════════════════════════════════════════╝"
+Write-Host "================================================================"
+Write-Host "   Team CLI Tools Installer (Windows)                           "
+Write-Host "================================================================"
 Write-Host ""
 
 # ------------------------------------------------------------------
 # 1. SCOOP PACKAGE MANAGER
 # ------------------------------------------------------------------
 if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
-    Write-Host "📦 Installing Scoop..."
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+    Write-Host "[INSTALL] Installing Scoop..."
+    try { Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force } catch { }
     Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+    # Refresh PATH so scoop is available immediately
+    $env:PATH = [System.Environment]::GetEnvironmentVariable("PATH", "User") + ";" + [System.Environment]::GetEnvironmentVariable("PATH", "Machine")
 } else {
-    Write-Host "✅ Scoop already installed"
+    Write-Host "[OK] Scoop already installed"
+}
+
+# Make sure scoop is reachable
+if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+    $scoopShim = "$env:USERPROFILE\scoop\shims"
+    if (Test-Path $scoopShim) {
+        $env:PATH = "$scoopShim;$env:PATH"
+    } else {
+        Write-Host "[ERROR] Scoop installed but not found in PATH. Restart terminal and run again."
+        exit 1
+    }
 }
 
 # Add extras bucket (needed for some packages)
-scoop bucket list | Select-String -Quiet "extras" | Out-Null
-if ($LASTEXITCODE -ne 0) {
+$buckets = scoop bucket list 2>&1
+if ($buckets -notmatch "extras") {
     scoop bucket add extras
 }
-scoop bucket list | Select-String -Quiet "nerd-fonts" | Out-Null
-if ($LASTEXITCODE -ne 0) {
+if ($buckets -notmatch "nerd-fonts") {
     scoop bucket add nerd-fonts
 }
 
@@ -38,7 +50,7 @@ if ($LASTEXITCODE -ne 0) {
 # 2. SCOOP PACKAGES
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "📦 Installing CLI tools via Scoop..."
+Write-Host "[INSTALL] Installing CLI tools via Scoop..."
 
 $ScoopPackages = @(
     "yt-dlp"          # YouTube downloader
@@ -56,9 +68,9 @@ $ScoopPackages = @(
 foreach ($pkg in $ScoopPackages) {
     $installed = scoop list $pkg 2>&1 | Select-String -Quiet $pkg
     if ($installed) {
-        Write-Host "  ✅ $pkg already installed"
+        Write-Host "  [OK] $pkg already installed"
     } else {
-        Write-Host "  📥 Installing $pkg..."
+        Write-Host "  [INSTALL] Installing $pkg..."
         scoop install $pkg
     }
 }
@@ -67,25 +79,29 @@ foreach ($pkg in $ScoopPackages) {
 # 3. SYNCTHING SERVICE
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "🔄 Setting up Syncthing..."
+Write-Host "[SETUP] Setting up Syncthing..."
 
 $taskName = "Syncthing"
 $taskExists = Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue
 if ($taskExists) {
-    Write-Host "  ✅ Syncthing scheduled task already exists"
+    Write-Host "  [OK] Syncthing scheduled task already exists"
 } else {
-    Write-Host "  🚀 Creating Syncthing startup task..."
+    Write-Host "  [SETUP] Creating Syncthing startup task..."
     $syncthingPath = (Get-Command syncthing -ErrorAction SilentlyContinue).Source
     if ($syncthingPath) {
-        $action = New-ScheduledTaskAction -Execute $syncthingPath -Argument "-no-browser"
-        $trigger = New-ScheduledTaskTrigger -AtLogOn
-        $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-        Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Description "Start Syncthing at login" | Out-Null
-        # Start it now too
-        Start-Process -FilePath $syncthingPath -ArgumentList "-no-browser" -WindowStyle Hidden
-        Write-Host "  ✅ Syncthing configured to start at login — web UI at http://127.0.0.1:8384"
+        try {
+            $action = New-ScheduledTaskAction -Execute $syncthingPath -Argument "-no-browser"
+            $trigger = New-ScheduledTaskTrigger -AtLogOn
+            $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+            Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Settings $settings -Description "Start Syncthing at login" | Out-Null
+            Start-Process -FilePath $syncthingPath -ArgumentList "-no-browser" -WindowStyle Hidden
+            Write-Host "  [OK] Syncthing configured to start at login -- web UI at http://127.0.0.1:8384"
+        } catch {
+            Write-Host "  [WARN] Could not create scheduled task (needs admin). Skipping auto-start."
+            Write-Host "  [INFO] You can start Syncthing manually: syncthing -no-browser"
+        }
     } else {
-        Write-Host "  ⚠️  Could not find syncthing executable. Skipping service setup."
+        Write-Host "  [WARN] Could not find syncthing executable. Skipping service setup."
     }
 }
 
@@ -93,10 +109,10 @@ if ($taskExists) {
 # 4. NERD FONT
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "🔤 Installing JetBrainsMono Nerd Font..."
+Write-Host "[INSTALL] Installing JetBrainsMono Nerd Font..."
 $fontInstalled = scoop list "JetBrainsMono-NF" 2>&1 | Select-String -Quiet "JetBrainsMono-NF"
 if ($fontInstalled) {
-    Write-Host "  ✅ Font already installed"
+    Write-Host "  [OK] Font already installed"
 } else {
     scoop install nerd-fonts/JetBrainsMono-NF
 }
@@ -105,7 +121,7 @@ if ($fontInstalled) {
 # 5. WINDOWS TERMINAL CONFIG NOTE
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "💻 Windows Terminal"
+Write-Host "[INFO] Windows Terminal"
 Write-Host "  Windows Terminal should already be installed on Windows 10/11."
 Write-Host "  Recommended: set JetBrainsMono Nerd Font in Settings > Profiles > Defaults > Appearance."
 Write-Host "  If not installed, get it from: Microsoft Store or 'winget install Microsoft.WindowsTerminal'"
@@ -115,9 +131,9 @@ Write-Host "  If not installed, get it from: Microsoft Store or 'winget install 
 # ------------------------------------------------------------------
 Write-Host ""
 if (Get-Command docker -ErrorAction SilentlyContinue) {
-    Write-Host "✅ Docker already installed (needed for rembg)"
+    Write-Host "[OK] Docker already installed (needed for rembg)"
 } else {
-    Write-Host "⚠️  Docker is NOT installed. It's required for the 'rembg' command."
+    Write-Host "[WARN] Docker is NOT installed. It is required for the 'rembg' command."
     Write-Host "   Install it from: https://www.docker.com/products/docker-desktop/"
     Write-Host "   (Skipping for now)"
 }
@@ -127,9 +143,9 @@ if (Get-Command docker -ErrorAction SilentlyContinue) {
 # ------------------------------------------------------------------
 Write-Host ""
 if (Get-Command nvm -ErrorAction SilentlyContinue) {
-    Write-Host "✅ nvm-windows already installed"
+    Write-Host "[OK] nvm-windows already installed"
 } else {
-    Write-Host "📦 Installing nvm-windows via Scoop..."
+    Write-Host "[INSTALL] Installing nvm-windows via Scoop..."
     scoop install nvm
 }
 
@@ -137,7 +153,7 @@ if (Get-Command nvm -ErrorAction SilentlyContinue) {
 # 8. POWERSHELL PROFILE
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "⚙️  Installing PowerShell profile..."
+Write-Host "[SETUP] Installing PowerShell profile..."
 
 $profileDir = Split-Path $PROFILE
 if (-not (Test-Path $profileDir)) {
@@ -145,30 +161,30 @@ if (-not (Test-Path $profileDir)) {
 }
 
 if (Test-Path $PROFILE) {
-    Write-Host "  ⚠️  Existing profile found — backing up to profile.backup.ps1"
+    Write-Host "  [WARN] Existing profile found -- backing up to profile.backup.ps1"
     Copy-Item $PROFILE "$PROFILE.backup" -Force
 }
 
 Copy-Item "$ScriptDir\configs\profile.ps1" $PROFILE -Force
-Write-Host "  ✅ Installed to $PROFILE"
+Write-Host "  [OK] Installed to $PROFILE"
 
 # ------------------------------------------------------------------
 # 9. STARSHIP CONFIG
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "🚀 Installing Starship config..."
+Write-Host "[SETUP] Installing Starship config..."
 $starshipDir = "$env:USERPROFILE\.config"
 if (-not (Test-Path $starshipDir)) {
     New-Item -ItemType Directory -Path $starshipDir -Force | Out-Null
 }
 
 if (Test-Path "$starshipDir\starship.toml") {
-    Write-Host "  ⚠️  Existing Starship config found — backing up to starship.toml.backup"
+    Write-Host "  [WARN] Existing Starship config found -- backing up to starship.toml.backup"
     Copy-Item "$starshipDir\starship.toml" "$starshipDir\starship.toml.backup" -Force
 }
 
 Copy-Item "$ScriptDir\configs\starship.toml" "$starshipDir\starship.toml" -Force
-Write-Host "  ✅ Installed to $starshipDir\starship.toml"
+Write-Host "  [OK] Installed to $starshipDir\starship.toml"
 
 # ------------------------------------------------------------------
 # 10. PRE-PULL DOCKER IMAGE FOR REMBG
@@ -183,22 +199,22 @@ if (Get-Command docker -ErrorAction SilentlyContinue) {
 }
 
 if ($dockerRunning) {
-    Write-Host "🐳 Pre-pulling rembg Docker image (this may take a minute)..."
+    Write-Host "[DOCKER] Pre-pulling rembg Docker image (this may take a minute)..."
     docker pull danielgatis/rembg
     if ($LASTEXITCODE -ne 0) {
-        Write-Host "  ⚠️  Could not pull image. Make sure Docker is running."
+        Write-Host "  [WARN] Could not pull image. Make sure Docker is running."
     }
 } else {
-    Write-Host "⏭️  Skipping rembg Docker image pull (Docker not running)"
+    Write-Host "[SKIP] Skipping rembg Docker image pull (Docker not running)"
 }
 
 # ------------------------------------------------------------------
 # DONE
 # ------------------------------------------------------------------
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════════╗"
-Write-Host "║                    ✅ All done!                             ║"
-Write-Host "╚══════════════════════════════════════════════════════════════╝"
+Write-Host "================================================================"
+Write-Host "   All done!                                                    "
+Write-Host "================================================================"
 Write-Host ""
 Write-Host "Available commands:"
 Write-Host ""
@@ -226,5 +242,5 @@ Write-Host "    cat                Syntax-highlighted file viewer"
 Write-Host "    c                  Clear terminal"
 Write-Host "    reload             Reload profile"
 Write-Host ""
-Write-Host "👉 Restart Windows Terminal, or run:  . `$PROFILE"
+Write-Host ">> Restart Windows Terminal, or run:  . $PROFILE"
 Write-Host ""
