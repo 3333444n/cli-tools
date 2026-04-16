@@ -21,6 +21,7 @@ One-command installer that sets up your Mac terminal with all the tools, aliases
 | `fzf` | Fuzzy finder |
 | `glow` | Render Markdown in the terminal |
 | `syncthing` | Continuous file synchronization between devices |
+| `exiftool` | Metadata reader (used by arko-dump) |
 | `nvm` | Node.js version manager |
 
 **Custom Commands:**
@@ -30,6 +31,7 @@ One-command installer that sets up your Mac terminal with all the tools, aliases
 | `yt <url>` | Download YouTube video at 1080p to ~/Downloads |
 | `yt-a <url> [format]` | Download audio only (mp3, wav, flac, m4a) |
 | `mp4 <file>` | Convert any video to MP4 |
+| `arko-dump <dir>` | Flatten media subdirs with metadata timestamps |
 | `rembg <file\|dir>` | Remove background from images (requires Docker) |
 | `mgck` | Convert all images in current folder to WebP |
 | `pdf-comp <file> [dpi]` | Compress a PDF (default 300 DPI) |
@@ -69,7 +71,8 @@ The script will:
 6. Install NVM (Node Version Manager)
 7. Copy shell configs (`.zshrc`, Starship, Ghostty)
 8. Install the `rembg` background removal script
-9. Pre-pull the rembg Docker image
+9. Install the `arko-dump` media flattening script
+10. Pre-pull the rembg Docker image
 
 ### Windows
 
@@ -89,8 +92,9 @@ The script will:
 4. Install JetBrainsMono Nerd Font
 5. Install nvm-windows (Node Version Manager)
 6. Install the PowerShell profile with all aliases and functions
-7. Install Starship config
-8. Pre-pull the rembg Docker image
+7. Install the `arko-dump` media flattening script
+8. Install Starship config
+9. Pre-pull the rembg Docker image
 
 > **Note:** Windows uses [Windows Terminal](https://aka.ms/terminal) + PowerShell instead of Ghostty + zsh. All commands (`yt`, `rembg`, `mp4`, `pdf-comp`, etc.) work the same way.
 
