@@ -85,6 +85,7 @@ alias yt='yt-dlp -f "bestvideo[height<=1080]+bestaudio/best[height<=1080]" -ciw 
 
 # AI / Custom Scripts
 alias rembg="~/rembg-tool.sh"
+alias arko-dump="~/arko-dump.sh"
 
 # ==============================================================================
 # 4. FUNCTIONS

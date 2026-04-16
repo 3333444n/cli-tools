@@ -37,6 +37,11 @@ function ... { Set-Location ../.. }
 Set-Alias -Name c -Value Clear-Host
 function reload { . $PROFILE }
 
+# arko-dump (flatten media subdirs with timestamps)
+function arko-dump {
+    & "$env:USERPROFILE\arko-dump.ps1" @args
+}
+
 # ==============================================================================
 # 4. MEDIA FUNCTIONS
 # ==============================================================================

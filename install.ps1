@@ -63,6 +63,7 @@ $ScoopPackages = @(
     "fzf"             # Fuzzy finder
     "glow"            # Markdown renderer for the terminal
     "syncthing"       # Continuous file synchronization
+    "exiftool"        # Metadata reader (used by arko-dump)
 )
 
 foreach ($pkg in $ScoopPackages) {
@@ -150,7 +151,16 @@ if (Get-Command nvm -ErrorAction SilentlyContinue) {
 }
 
 # ------------------------------------------------------------------
-# 8. POWERSHELL PROFILE
+# 8. ARKO-DUMP SCRIPT
+# ------------------------------------------------------------------
+Write-Host ""
+Write-Host "[SETUP] Installing arko-dump..."
+$arkoDumpDest = "$env:USERPROFILE\arko-dump.ps1"
+Copy-Item "$ScriptDir\configs\arko-dump.ps1" $arkoDumpDest -Force
+Write-Host "  [OK] Installed to $arkoDumpDest"
+
+# ------------------------------------------------------------------
+# 9. POWERSHELL PROFILE
 # ------------------------------------------------------------------
 Write-Host ""
 Write-Host "[SETUP] Installing PowerShell profile..."
@@ -169,7 +179,7 @@ Copy-Item "$ScriptDir\configs\profile.ps1" $PROFILE -Force
 Write-Host "  [OK] Installed to $PROFILE"
 
 # ------------------------------------------------------------------
-# 9. STARSHIP CONFIG
+# 10. STARSHIP CONFIG
 # ------------------------------------------------------------------
 Write-Host ""
 Write-Host "[SETUP] Installing Starship config..."
@@ -187,7 +197,7 @@ Copy-Item "$ScriptDir\configs\starship.toml" "$starshipDir\starship.toml" -Force
 Write-Host "  [OK] Installed to $starshipDir\starship.toml"
 
 # ------------------------------------------------------------------
-# 10. PRE-PULL DOCKER IMAGE FOR REMBG
+# 11. PRE-PULL DOCKER IMAGE FOR REMBG
 # ------------------------------------------------------------------
 Write-Host ""
 $dockerRunning = $false
@@ -222,6 +232,7 @@ Write-Host "  Media:"
 Write-Host "    yt <url>           Download YouTube video (1080p)"
 Write-Host "    yt-a <url>         Download audio only (mp3/wav/flac)"
 Write-Host "    mp4 <file>         Convert video to MP4"
+Write-Host "    arko-dump <dir>    Flatten media subdirs with timestamps"
 Write-Host ""
 Write-Host "  Images:"
 Write-Host "    rembg <file|dir>   Remove background from images"

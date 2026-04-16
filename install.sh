@@ -48,6 +48,7 @@ BREW_PACKAGES=(
     fzf             # Fuzzy finder
     glow            # Markdown renderer for the terminal
     syncthing       # Continuous file synchronization
+    exiftool        # Metadata reader (used by arko-dump)
 )
 
 for pkg in "${BREW_PACKAGES[@]}"; do
@@ -127,6 +128,15 @@ chmod +x "$HOME/rembg-tool.sh"
 echo "  ✅ Installed to ~/rembg-tool.sh"
 
 # ------------------------------------------------------------------
+# 8b. ARKO-DUMP SCRIPT
+# ------------------------------------------------------------------
+echo ""
+echo "📄 Installing arko-dump..."
+cp "$SCRIPT_DIR/configs/arko-dump.sh" "$HOME/arko-dump.sh"
+chmod +x "$HOME/arko-dump.sh"
+echo "  ✅ Installed to ~/arko-dump.sh"
+
+# ------------------------------------------------------------------
 # 9. GHOSTTY CONFIG
 # ------------------------------------------------------------------
 echo ""
@@ -189,6 +199,7 @@ echo "  Media:"
 echo "    yt <url>           Download YouTube video (1080p)"
 echo "    yt-a <url>         Download audio only (mp3/wav/flac)"
 echo "    mp4 <file>         Convert video to MP4"
+echo "    arko-dump <dir>    Flatten media subdirs with timestamps"
 echo ""
 echo "  Images:"
 echo "    rembg <file|dir>   Remove background from images"
